@@ -1,8 +1,9 @@
 import { supabase } from '@/lib/supabase';
+import { evaluateWorkoutAchievements } from '@/features/achievements/api';
 import { grantXp } from '@/features/hero/api';
-import { applyWorkoutToMuscleGroups } from '@/features/muscleProgress/api';
+import { applyWorkoutToMuscleGroups, getMuscleProgress } from '@/features/muscleProgress/api';
 import { incrementMissionsByCategory } from '@/features/missions/api';
-import type { MissionRow, MuscleGroup, WorkoutExerciseRow, WorkoutIntensity, WorkoutRow } from '@/types/database';
+import type { AchievementRow, MissionRow, MuscleGroup, WorkoutExerciseRow, WorkoutIntensity, WorkoutRow } from '@/types/database';
 import { XP_REWARDS } from '@/utils/xpEngine';
 
 export type WorkoutWithExercises = WorkoutRow & { workout_exercises: WorkoutExerciseRow[] };
@@ -86,9 +87,11 @@ export async function createWorkout(params: {
 export type CompleteWorkoutResult = {
   leveledUp: boolean;
   levelsGained: number;
+  newLevel: number;
   streakMilestoneHit: boolean;
   xpEarned: number;
   completedMissions: MissionRow[];
+  unlockedAchievements: AchievementRow[];
 };
 
 export async function completeWorkout(userId: string, workout: WorkoutWithExercises): Promise<CompleteWorkoutResult> {
@@ -111,11 +114,22 @@ export async function completeWorkout(userId: string, workout: WorkoutWithExerci
 
   const completedMissions = await incrementMissionsByCategory(userId, 'treino', 1);
 
+  const [completedWorkouts, muscleProgress] = await Promise.all([getWorkouts(userId), getMuscleProgress(userId)]);
+
+  const unlockedAchievements = await evaluateWorkoutAchievements({
+    userId,
+    completedWorkoutsCount: completedWorkouts.filter((row) => row.completed).length,
+    streakDays: xpResult.profile.streak_days,
+    muscleProgress,
+  });
+
   return {
     leveledUp: xpResult.leveledUp,
     levelsGained: xpResult.levelsGained,
+    newLevel: xpResult.profile.level,
     streakMilestoneHit: xpResult.streakMilestoneHit,
     xpEarned,
     completedMissions,
+    unlockedAchievements,
   };
 }

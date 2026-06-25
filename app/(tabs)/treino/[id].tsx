@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { Text, View } from 'react-native';
 
+import { LevelUpModal, MissionCompleteModal } from '@/components/gamification';
 import { ToriMessage } from '@/components/mascot';
 import { TORI_MESSAGES, pickRandom } from '@/components/mascot/messages';
 import { Button, Card, Pill, ScreenContainer } from '@/components/ui';
@@ -21,6 +22,7 @@ export default function WorkoutDetailScreen() {
   const { data: workout, isLoading } = useWorkout(id);
   const completeWorkout = useCompleteWorkout();
   const [result, setResult] = useState<CompleteWorkoutResult | null>(null);
+  const [modalStage, setModalStage] = useState<'levelup' | 'missions' | null>(null);
 
   if (isLoading || !workout) {
     return (
@@ -34,6 +36,19 @@ export default function WorkoutDetailScreen() {
     if (!workout) return;
     const completionResult = await completeWorkout.mutateAsync(workout);
     setResult(completionResult);
+    if (completionResult.leveledUp) {
+      setModalStage('levelup');
+    } else if (completionResult.completedMissions.length > 0) {
+      setModalStage('missions');
+    }
+  }
+
+  function handleCloseLevelUp() {
+    setModalStage(result && result.completedMissions.length > 0 ? 'missions' : null);
+  }
+
+  function handleCloseMissions() {
+    setModalStage(null);
   }
 
   return (
@@ -71,6 +86,11 @@ export default function WorkoutDetailScreen() {
               {result.completedMissions.length} missao(oes) concluida(s)
             </Text>
           )}
+          {result.unlockedAchievements.map((achievement) => (
+            <Text key={achievement.id} style={[typography.caption, { color: colors.gold }]}>
+              Conquista desbloqueada: {achievement.title}
+            </Text>
+          ))}
         </Card>
       )}
 
@@ -89,6 +109,23 @@ export default function WorkoutDetailScreen() {
 
       {!workout.completed && (
         <Button label="Concluir treino" onPress={handleComplete} loading={completeWorkout.isPending} />
+      )}
+
+      {result && (
+        <LevelUpModal
+          visible={modalStage === 'levelup'}
+          newLevel={result.newLevel}
+          levelsGained={result.levelsGained}
+          onClose={handleCloseLevelUp}
+        />
+      )}
+
+      {result && (
+        <MissionCompleteModal
+          visible={modalStage === 'missions'}
+          missions={result.completedMissions}
+          onClose={handleCloseMissions}
+        />
       )}
     </ScreenContainer>
   );

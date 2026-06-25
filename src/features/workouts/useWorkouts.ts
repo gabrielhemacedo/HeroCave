@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useSessionStore } from '@/store/sessionStore';
+import { useInvalidateUnlockedAchievements } from '@/features/achievements/useAchievements';
 import { useInvalidateHeroProfile } from '@/features/hero/useHeroProfile';
 import { useInvalidateMissions } from '@/features/missions/useMissions';
+import { useInvalidateMuscleProgress } from '@/features/muscleProgress/useMuscleProgress';
 import {
   completeWorkout,
   createWorkout,
@@ -57,6 +59,8 @@ export function useCompleteWorkout() {
   const queryClient = useQueryClient();
   const invalidateHeroProfile = useInvalidateHeroProfile();
   const invalidateMissions = useInvalidateMissions();
+  const invalidateMuscleProgress = useInvalidateMuscleProgress();
+  const invalidateUnlockedAchievements = useInvalidateUnlockedAchievements();
 
   return useMutation<CompleteWorkoutResult, Error, WorkoutWithExercises>({
     mutationFn: (workout) => completeWorkout(userId as string, workout),
@@ -65,6 +69,8 @@ export function useCompleteWorkout() {
       queryClient.invalidateQueries({ queryKey: workoutKey(workout.id) });
       invalidateHeroProfile();
       invalidateMissions();
+      invalidateMuscleProgress();
+      invalidateUnlockedAchievements();
     },
   });
 }

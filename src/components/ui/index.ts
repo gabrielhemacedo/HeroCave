@@ -1,6 +1,7 @@
 export * from './Badge';
 export * from './Button';
 export * from './Card';
+export * from './ComingSoon';
 export * from './OptionChips';
 export * from './Pill';
 export * from './ProgressBar';

@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import type { HeroClass, HeroProfileRow } from '@/types/database';
-import { applyXp, computeNextStreak, isStreakMilestone } from '@/utils/xpEngine';
+import { applyXp, computeNextStreak, isStreakMilestone, leagueForProgress } from '@/utils/xpEngine';
 
 export async function getHeroProfile(userId: string): Promise<HeroProfileRow | null> {
   const { data, error } = await supabase.from('hero_profiles').select('*').eq('user_id', userId).maybeSingle();
@@ -69,6 +69,7 @@ export async function grantXp(userId: string, xpGained: number): Promise<GrantXp
       streak_days: streak.streakDays,
       last_active_date: today,
       coins: profile.coins + Math.round(xpGained / 5),
+      league_general: leagueForProgress(xpResult.newTotalXp),
     })
     .eq('user_id', userId)
     .select('*')
