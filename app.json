@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Modo Heroi",
+    "slug": "modo-heroi",
+    "scheme": "modoheroi",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "plugins": ["expo-router"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.herocave.modoheroi",
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "Modo Heroi le seus dados de saude (passos, treinos, frequencia cardiaca) para dar XP automatico ao seu heroi.",
+        "NSHealthUpdateUsageDescription": "Modo Heroi pode registrar treinos no Apple Health."
+      }
+    },
+    "android": {
+      "package": "com.herocave.modoheroi",
+      "adaptiveIcon": {
+        "backgroundColor": "#09061A",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["android.permission.health.READ_STEPS", "android.permission.health.READ_EXERCISE"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    }
+  }
+}
