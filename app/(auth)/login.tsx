@@ -1,23 +1,25 @@
 import { useState } from 'react';
 import { Link } from 'expo-router';
-import { Alert, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { Tori } from '@/components/mascot';
 import { Button, ScreenContainer, TextField } from '@/components/ui';
 import { signInWithEmail } from '@/features/auth/api';
-import { spacing, typography } from '@/theme';
+import { colors, spacing, typography } from '@/theme';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleLogin() {
     setLoading(true);
+    setError(null);
     try {
       await signInWithEmail(email.trim(), password);
-    } catch (error) {
-      Alert.alert('Nao foi possivel entrar', error instanceof Error ? error.message : 'Tente novamente.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nao foi possivel entrar. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -43,6 +45,9 @@ export default function LoginScreen() {
           placeholder="voce@email.com"
         />
         <TextField label="Senha" value={password} onChangeText={setPassword} secureTextEntry placeholder="********" />
+        {error && (
+          <Text style={[typography.caption, { color: colors.red, textAlign: 'center' }]}>{error}</Text>
+        )}
         <Button label="Entrar" onPress={handleLogin} loading={loading} disabled={!email || !password} />
         <Link href="/(auth)/signup" style={{ alignSelf: 'center', marginTop: spacing.sm }}>
           <Text style={typography.caption}>Nao tem conta? Criar heroi</Text>
